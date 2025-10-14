@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/feedback")
 public class FeedbackController {
@@ -24,5 +26,17 @@ public class FeedbackController {
         log.debug("Handling feedback submission for name={}", request.getName());
         FeedbackResponse response = service.createFeedback(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FeedbackResponse>> getAll() {
+        log.debug("Fetching all feedbacks");
+        return ResponseEntity.ok(service.getAllFeedbacks());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FeedbackResponse> getById(@PathVariable Long id) {
+        log.debug("Fetching feedback id={}", id);
+        return ResponseEntity.ok(service.getFeedbackById(id));
     }
 }

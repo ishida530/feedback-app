@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +36,15 @@ public class GlobalExceptionHandler {
         log.warn("Malformed JSON: {}", ex.getMessage());
         ErrorResponse body = new ErrorResponse("Malformed JSON", null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        HttpStatus effective = status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR;
+        log.warn("{}: {}", effective, ex.getReason());
+        ErrorResponse body = new ErrorResponse(ex.getReason() != null ? ex.getReason() : effective.getReasonPhrase(), null);
+        return ResponseEntity.status(effective).body(body);
     }
 
     private FieldErrorDetail mapField(FieldError fe) {
